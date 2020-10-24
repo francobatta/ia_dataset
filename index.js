@@ -37,8 +37,9 @@ fs.createReadStream("input.csv")
   .pipe(csv())
   .on("data", (row) => {
     if (map_old_country_to_new.get(row.country_txt))
-		row.country_txt = map_old_country_to_new.get(row.country_txt)
-	array_all_data.push(row);
+      row.country_txt = map_old_country_to_new.get(row.country_txt)
+    if (!row.date.includes('/0/'))
+	    array_all_data.push(row);
   })
   .on("end", () => {
     // prepare for info
