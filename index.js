@@ -1,6 +1,7 @@
 const csv = require("csv-parser");
 const fs = require("fs");
 const _ = require("lodash");
+const { isNumber } = require("util");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 
 const getPropLowerAndTrim = (arr, prop) => arr.map(elem => elem[prop]).map(str => str.toLowerCase()).map(str => str.trim())
@@ -11,6 +12,7 @@ const csvWriter = createCsvWriter({
   path: "out.csv",
   header: [
     { id: "country_txt", title: "country_txt" },
+    { id: "region_txt", title: "region_txt" },
     { id: "date", title: "date" },
   ],
 });
@@ -34,12 +36,19 @@ const map_old_country_to_new = new Map([
 const array_all_data = [];
 
 fs.createReadStream("input.csv")
-  .pipe(csv())
+  .pipe(csv({ separator: ','}))
   .on("data", (row) => {
     if (map_old_country_to_new.get(row.country_txt))
       row.country_txt = map_old_country_to_new.get(row.country_txt)
-    if (!row.date.includes('/0/'))
-	    array_all_data.push(row);
+    if (row.imonth <= 0)
+      row.imonth = parseInt(row.imonth) + 1
+    if (row.iday <= 0)
+      row.iday = parseInt(row.iday) + 1
+
+      //console.log(row)
+
+    row.date = new Date(parseInt(row["iyear"]), parseInt(row.imonth - 1), parseInt(row.iday)).toISOString().substring(0, 10)
+	  array_all_data.push(row)
   })
   .on("end", () => {
     // prepare for info
